@@ -22,6 +22,13 @@ class PlanningTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             plan_translation((0, 0), (1, 1, 1), duration_s=1)
 
+    def test_oversized_and_non_iterable_inputs_are_rejected(self):
+        for start in ((10**400, 0, 0), (-10**400, 0, 0), None):
+            with self.subTest(start=start), self.assertRaises(ValueError):
+                plan_translation(start, (0, 0, 0), duration_s=1)
+        with self.assertRaises(ValueError):
+            plan_translation((0, 0, 0), (0, 0, 0), duration_s=10**400)
+
 
 class GuardTests(unittest.TestCase):
     limits = GuardLimits(1, 0.08, 0.03)
@@ -48,7 +55,7 @@ class GuardTests(unittest.TestCase):
         self.assertTrue(check_feedback(feedback, self.limits, baseline=(0.04,)).allowed)
 
     def test_invalid_limits(self):
-        for values in ((0, 1, 1), (1, -1, 1), (1, 1, math.nan)):
+        for values in ((0, 1, 1), (1, -1, 1), (1, 1, math.nan), (10**400, 1, 1)):
             with self.subTest(values=values), self.assertRaises(ValueError):
                 GuardLimits(*values)
         self.assertFalse(check_feedback(Feedback((0,), (0,), 0), None).allowed)
