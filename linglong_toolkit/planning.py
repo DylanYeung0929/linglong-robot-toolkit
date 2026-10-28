@@ -5,11 +5,15 @@ import math
 
 
 def finite_vector(values):
-    vector = tuple(values)
-    if not vector or any(
-        isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v)
-        for v in vector
-    ):
+    try:
+        vector = tuple(values)
+        valid = bool(vector) and all(
+            not isinstance(v, bool) and isinstance(v, (int, float)) and math.isfinite(v)
+            for v in vector
+        )
+    except (TypeError, OverflowError) as exc:
+        raise ValueError("Expected a non-empty vector of finite numbers") from exc
+    if not valid:
         raise ValueError("Expected a non-empty vector of finite numbers")
     return vector
 
